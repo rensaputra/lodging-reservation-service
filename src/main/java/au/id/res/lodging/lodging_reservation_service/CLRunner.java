@@ -23,6 +23,5 @@ public class CLRunner implements CommandLineRunner {
         Optional<Room> room = this.roomRepository.findByRoomNumberIgnoreCase("p1");
         room.ifPresent(System.out::println);
         rooms.forEach(System.out::println);
-
     }
 }
