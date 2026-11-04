@@ -1,6 +1,8 @@
 package au.id.res.lodging.lodging_reservation_service;
 
+import au.id.res.lodging.lodging_reservation_service.data.entity.Reservation;
 import au.id.res.lodging.lodging_reservation_service.data.entity.Room;
+import au.id.res.lodging.lodging_reservation_service.data.repository.ReservationRepository;
 import au.id.res.lodging.lodging_reservation_service.data.repository.RoomRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -12,16 +14,23 @@ import java.util.Optional;
 public class CLRunner implements CommandLineRunner {
 
     private final RoomRepository roomRepository;
+    private final ReservationRepository reservationRepository;
 
-    public CLRunner(RoomRepository roomRepository) {
+    public CLRunner(RoomRepository roomRepository, ReservationRepository reservationRepository) {
         this.roomRepository = roomRepository;
+        this.reservationRepository =  reservationRepository;
     }
 
     @Override
     public void run(String... args) throws Exception {
-        List<Room> rooms = this.roomRepository.findAll();
+        /*List<Room> rooms = this.roomRepository.findAll();
         Optional<Room> room = this.roomRepository.findByRoomNumberIgnoreCase("p1");
         room.ifPresent(System.out::println);
-        rooms.forEach(System.out::println);
+        rooms.forEach(System.out::println);*/
+
+        List<Reservation> reservations = reservationRepository.findAll();
+        reservations.forEach(reservation -> {
+            System.out.println(reservation);
+        });
     }
 }

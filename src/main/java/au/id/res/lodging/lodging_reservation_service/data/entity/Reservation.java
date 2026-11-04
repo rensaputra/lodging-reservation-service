@@ -2,13 +2,16 @@ package au.id.res.lodging.lodging_reservation_service.data.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import java.time.LocalDate;
 
 @Entity
 @Table(name="reservations", schema="lodging")
-@Data
-@ToString
+@Getter
+@Setter
+@ToString(exclude = {"room", "guest"})
 
 public class Reservation {
     @Id
