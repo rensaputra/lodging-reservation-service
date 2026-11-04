@@ -2,31 +2,27 @@ package au.id.res.lodging.lodging_reservation_service.data.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
-import java.time.LocalDate;
+
+import java.sql.Date;
 
 @Entity
 @Table(name="reservations", schema="lodging")
-@Getter
-@Setter
-@ToString(exclude = {"room", "guest"})
+@Data
+@ToString
 
 public class Reservation {
     @Id
     @Column(name="reservation_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long reservationId;
+    private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="room_id", nullable = false)
-    private Room room;
+    @Column(name="room_id")
+    private long roomId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="guest_id", nullable=false)
-    private Guest guest;
+    @Column(name="guest_id")
+    private long guestId;
 
     @Column(name="res_date")
-    private LocalDate resDate;
+    private Date reservationDate;
 }
