@@ -6,35 +6,29 @@ import au.id.res.lodging.lodging_reservation_service.data.entity.Room;
 import au.id.res.lodging.lodging_reservation_service.data.repository.GuestRepository;
 import au.id.res.lodging.lodging_reservation_service.data.repository.ReservationRepository;
 import au.id.res.lodging.lodging_reservation_service.data.repository.RoomRepository;
+import au.id.res.lodging.lodging_reservation_service.service.RoomReservationService;
+import au.id.res.lodging.lodging_reservation_service.service.model.RoomReservation;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
 
+/* Hey Spring, manage this class as a Bean—just instantiate it, wire its dependencies, and keep it in the container.
+No special architectural role implied.*/
+
 @Component
 public class CLRunner implements CommandLineRunner {
 
-    private final RoomRepository roomRepository;
-    private final ReservationRepository reservationRepository;
-    private final GuestRepository guestRepository;
+    private final RoomReservationService roomReservationService;
 
-    public CLRunner(RoomRepository roomRepository, ReservationRepository reservationRepository, GuestRepository guestRepository) {
-        this.roomRepository = roomRepository;
-        this.reservationRepository =  reservationRepository;
-        this.guestRepository = guestRepository;
+    public CLRunner(RoomReservationService roomReservationService) {
+        this.roomReservationService = roomReservationService;
     }
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("*** GUESTS ***");
-        List<Guest> guests = this.guestRepository.findAll();
-        guests.forEach(System.out::println);
-        System.out.println(" *** ROOMS ***");
-        List<Room> rooms = this.roomRepository.findAll();
-        rooms.forEach(System.out::println);
-        System.out.println(" *** RESERVATIONS ***");
-        List<Reservation> reservations = this.reservationRepository.findAll();
+        List<RoomReservation> reservations = this.roomReservationService.getRoomReservationsForDate("2023-08-28");
         reservations.forEach(System.out::println);
     }
 }
