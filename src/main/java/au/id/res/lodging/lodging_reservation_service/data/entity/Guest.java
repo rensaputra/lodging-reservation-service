@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
 
+/* Hey JPA, this class represents a database table, and each instance of this class represents a single row in that table. */
 @Entity
 @Table(name="guests", schema="lodging")
 @Data
