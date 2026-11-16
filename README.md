@@ -80,7 +80,7 @@ lodging-reservation-service/
 
 ### Prerequisites
 
-- **JDK 27** (as specified in `pom.xml`)
+- **JDK 17** (as specified in `pom.xml`)
 - **Maven 3.8+**
 - **Docker & Docker Compose** (for the local PostgreSQL database)
 
@@ -101,13 +101,13 @@ cd ..
 
 **2. Verify Java version**
 
-The project requires JDK 27:
+The project requires JDK 17:
 
 ```bash
 java -version
 ```
 
-If you see a different version, set `JAVA_HOME` to point at your JDK 27 installation before proceeding.
+If you see a different version, set `JAVA_HOME` to point at your JDK 17 installation before proceeding.
 
 **3. Run the service**
 
