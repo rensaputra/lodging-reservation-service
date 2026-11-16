@@ -20,7 +20,7 @@ public class GuestApiController {
     }
 
     @GetMapping
-    public List<Guest> findAll() {
+    public List<Guest> getAllGuests() {
         return guestRepository.findAll();
     }
 

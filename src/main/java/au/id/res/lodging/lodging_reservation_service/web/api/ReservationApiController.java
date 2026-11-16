@@ -4,9 +4,13 @@ import au.id.res.lodging.lodging_reservation_service.data.entity.Reservation;
 import au.id.res.lodging.lodging_reservation_service.data.repository.ReservationRepository;
 import au.id.res.lodging.lodging_reservation_service.web.exception.BadRequestException;
 import au.id.res.lodging.lodging_reservation_service.web.exception.NotFoundException;
+import io.micrometer.common.util.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.util.DateUtils;
 
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,7 +24,11 @@ public class ReservationApiController {
     }
 
     @GetMapping
-    public List<Reservation> findAll() {
+    public List<Reservation> getAllReservations(@RequestParam(value="date", required=false) String dateString) {
+        if(StringUtils.isNotBlank(dateString)) {
+            Date date = Date.valueOf(dateString);
+            return this.reservationRepository.findAllByReservationDate(date);
+        }
         return this.reservationRepository.findAll();
     }
 
