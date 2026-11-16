@@ -49,7 +49,7 @@ public class GuestApiController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.RESET_CONTENT)
-    public void deleteGuest(@PathVariable("id") long id){
+    public void deleteGuestById(@PathVariable("id") long id){
         this.guestRepository.deleteById(id);
     }
 }
