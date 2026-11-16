@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+/* Hey Spring, register this class as a REST API controller bean,
+route all incoming HTTP requests starting with /api/rooms to its methods,
+and automatically serialize whatever Java objects those methods return straight into JSON (or XML)
+for the HTTP response body. */
+
 @RestController
 @RequestMapping("/api/rooms")
 public class RoomApiController {
