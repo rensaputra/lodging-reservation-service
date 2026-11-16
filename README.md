@@ -4,25 +4,59 @@
 [![Spring Boot 3](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A lightweight enterprise lodging backend service responsible for managing room inventory, guest profiles, and reservation scheduling. Built with Spring Boot 3, Spring Data JPA, and designed for containerized deployment.
+A lightweight enterprise lodging backend service responsible for managing room inventory, guest profiles, and reservation scheduling. Built with Spring Boot 3 and Spring Data JPA, it exposes both RESTful JSON endpoints and server-side rendered web pages (Thymeleaf).
 
 ---
 
 ## Architecture Overview
 
-The service follows a layered architecture with clear separation of concerns across data persistence, domain logic, and presentation/API layers:
+The service follows a layered architecture with clear separation of concerns:
 
-- **Presentation / API Tier:** Exposes RESTful endpoints (`/api/v1/*`) returning JSON payloads alongside server-side rendered operations dashboards.
-- **Service Tier:** Orchestrates reservation validation, room allocation business rules, and guest profile synchronization.
-- **Persistence Tier:** Spring Data JPA abstractions supporting both an in-memory H2 profile for rapid local validation and PostgreSQL for production environments.
+- **Web Tier:** Two kinds of entry point live under `web/`. REST controllers in `web/api` return JSON under `/api/*`; MVC controllers in `web/controller` render Thymeleaf pages for the operations dashboard.
+- **Service Tier:** Orchestrates room-reservation aggregation and business logic (`service/`).
+- **Persistence Tier:** Spring Data JPA entities and repositories (`data/`), backed by PostgreSQL.
 
 ### Tech Stack
 
-- **Runtime:** Java 17 (or Java 21 LTS)
+- **Runtime:** Java 17
 - **Framework:** Spring Boot 3.x, Spring Framework 6.x
+- **Web Pages:** Thymeleaf (server-side rendering)
 - **Data Access:** Spring Data JPA / Hibernate (Jakarta EE 10 namespace)
-- **Database:** PostgreSQL (production profile), H2 Database (local/test profile)
+- **Database:** PostgreSQL
 - **Build Tool:** Maven
+
+---
+
+## Project Structure
+
+```
+lodging-reservation-service/
+├── db/                                  # Local PostgreSQL via Docker Compose (schema + seed data)
+│   ├── docker-compose.yml
+│   ├── schema.sql
+│   ├── data.sql
+│   └── README.md
+├── src/main/java/.../lodging_reservation_service/
+│   ├── LodgingReservationServiceApplication.java
+│   ├── data/
+│   │   ├── entity/                      # JPA entities: Room, Guest, Reservation
+│   │   └── repository/                  # Spring Data repositories
+│   ├── service/                         # Business logic (RoomReservationService + models)
+│   └── web/
+│       ├── api/                         # REST controllers (JSON, under /api/*)
+│       │   ├── RoomApiController.java
+│       │   ├── GuestApiController.java
+│       │   └── ReservationApiController.java
+│       ├── controller/                  # MVC controllers rendering Thymeleaf pages
+│       │   ├── RoomController.java
+│       │   ├── OccupancyController.java
+│       │   └── WelcomeController.java
+│       └── exception/                   # BadRequestException, NotFoundException
+└── src/main/resources/
+    ├── application.properties
+    ├── static/index.html                # Landing page
+    └── templates/                       # Thymeleaf templates (rooms.html, occupancy.html)
+```
 
 ---
 
@@ -46,71 +80,107 @@ The service follows a layered architecture with clear separation of concerns acr
 
 ### Prerequisites
 
-- **JDK 17** or later
+- **JDK 27** (as specified in `pom.xml`)
 - **Maven 3.8+**
-- **Docker & Docker Compose** (optional, for running local PostgreSQL)
+- **Docker & Docker Compose** (for the local PostgreSQL database)
 
-### Local Development (H2 In-Memory)
+### Running Locally
 
-By default, the service boots with an embedded H2 database pre-seeded with sample inventory:
+This replicates what IntelliJ does when you press the play button.
+
+**1. Start the database**
+
+The `db/` directory provides a Docker Compose setup that runs PostgreSQL and applies `schema.sql` then `data.sql` on first startup. See [db/README.md](db/README.md) for details.
 
 ```bash
-# Clone the repository
-git clone https://github.com/<your-username>/lodging-reservation-service.git
-cd lodging-reservation-service
+cd db
+cp .env.example .env    # adjust values if needed (first time only)
+docker compose up -d
+cd ..
+```
 
-# Build and run the service
-./mvnw spring-boot:run
+**2. Verify Java version**
+
+The project requires JDK 27:
+
+```bash
+java -version
+```
+
+If you see a different version, set `JAVA_HOME` to point at your JDK 27 installation before proceeding.
+
+**3. Run the service**
+
+```bash
+mvn spring-boot:run
+```
+
+Alternatively, build a jar and run it:
+
+```bash
+mvn clean package
+java -jar target/lodging-reservation-service-0.0.1-SNAPSHOT.jar
 ```
 
 Once running:
+
 - **Base URL:** `http://localhost:8080`
-- **H2 Console:** `http://localhost:8080/h2-console` *(JDBC URL: `jdbc:h2:mem:lodgingdb`)*
+- **Landing page:** `http://localhost:8080/` (`static/index.html`)
+- **Web pages:** `/rooms`, `/occupancy`, `/welcome`
+- **API endpoints:** `/api/rooms`, `/api/guests`, `/api/reservations`
 
-### Production Profile (PostgreSQL)
+---
 
-To run against a local PostgreSQL instance via Docker Compose:
+## Web Pages (Thymeleaf)
 
-1. **Spin up the database:**
-   ```bash
-   docker compose up -d postgres
-   ```
+MVC controllers in `web/controller` render server-side pages:
 
-2. **Launch with the `postgres` profile active:**
-   ```bash
-   ./mvnw spring-boot:run -Dspring-boot.run.profiles=postgres
-   ```
+| Path | Template | Description |
+| :--- | :--- | :--- |
+| `GET /rooms` | `rooms.html` | Room inventory page |
+| `GET /occupancy` | `occupancy.html` | Occupancy / reservations dashboard |
+| `GET /welcome` | — | Inline HTML greeting |
 
 ---
 
 ## API Reference
 
-### Rooms
+REST controllers in `web/api` return JSON. All three resources support full CRUD.
+
+### Rooms — `/api/rooms`
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/v1/rooms` | Retrieve all room records and layout details |
-| `GET` | `/api/v1/rooms/{id}` | Retrieve room details by identifier |
+| `GET` | `/api/rooms` | List all rooms |
+| `POST` | `/api/rooms` | Create a room |
+| `GET` | `/api/rooms/{id}` | Retrieve a room by id |
+| `PUT` | `/api/rooms/{id}` | Update a room |
+| `DELETE` | `/api/rooms/{id}` | Delete a room |
 
-### Guests
-
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/guests` | Retrieve directory of registered guests |
-| `POST` | `/api/v1/guests` | Register a new guest profile |
-| `GET` | `/api/v1/guests/{id}` | Retrieve specific guest profile |
-
-### Reservations
+### Guests — `/api/guests`
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/v1/reservations` | List reservations (filterable by date: `?date=YYYY-MM-DD`) |
-| `POST` | `/api/v1/reservations` | Create a new room booking |
+| `GET` | `/api/guests` | List all guests |
+| `POST` | `/api/guests` | Register a guest |
+| `GET` | `/api/guests/{id}` | Retrieve a guest by id |
+| `PUT` | `/api/guests/{id}` | Update a guest |
+| `DELETE` | `/api/guests/{id}` | Delete a guest |
+
+### Reservations — `/api/reservations`
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/reservations` | List reservations (filter by date: `?date=YYYY-MM-DD`) |
+| `POST` | `/api/reservations` | Create a reservation |
+| `GET` | `/api/reservations/{id}` | Retrieve a reservation by id |
+| `PUT` | `/api/reservations/{id}` | Update a reservation |
+| `DELETE` | `/api/reservations/{id}` | Delete a reservation |
 
 #### Sample Request: Create Reservation
 
 ```http
-POST /api/v1/reservations HTTP/1.1
+POST /api/reservations HTTP/1.1
 Host: localhost:8080
 Content-Type: application/json
 
@@ -125,26 +195,25 @@ Content-Type: application/json
 
 ## Configuration
 
-Core application settings are configured in `src/main/resources/application.yml`:
+Application settings live in `src/main/resources/application.properties`:
 
 | Property | Default | Description |
 | :--- | :--- | :--- |
-| `server.port` | `8080` | HTTP listener port |
-| `spring.datasource.url` | `jdbc:h2:mem:lodgingdb` | Database connection string |
-| `spring.jpa.hibernate.ddl-auto` | `update` | Schema generation strategy |
-| `spring.jpa.open-in-view` | `false` | Explicitly disables Open Session In View |
+| `spring.application.name` | `lodging-reservation-service` | Application name |
+| `spring.jpa.database` | `postgresql` | JPA database dialect |
+| `spring.datasource.url` | `jdbc:postgresql://localhost:5432/myapp` | Database connection string |
+| `spring.datasource.username` | `appuser` | Database user |
+| `spring.datasource.password` | `apppassword` | Database password |
 
 ---
 
 ## Testing & Quality
 
-Run unit and slice integration tests:
-
 ```bash
-# Run unit and repository slice tests
+# Run unit and slice tests
 ./mvnw clean test
 
-# Run packaged integration suite
+# Run the packaged integration suite
 ./mvnw clean verify
 ```
 
